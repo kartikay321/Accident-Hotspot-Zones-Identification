@@ -1,0 +1,56 @@
+import pandas as pd
+import sqlite3
+
+data=pd.read_csv('output.csv',encoding='ISO-8859-1')
+
+df = pd.DataFrame(data)
+
+conn = sqlite3.connect(':memory:')
+
+
+df.to_sql('mytable', conn, index=False)
+
+# sql_query = "SELECT `cluster_number`,MIN(Start_Lat) AS MinStartLatitude, MAX(Start_Lat) AS MaxStartLatitude, MIN(Start_Lng) AS MinStartLongitude, MAX(Start_Lng) AS MaxStartLongitude, MIN(End_Lat) AS MinEndLatitude, MAX(End_Lat) AS MaxEndLatitude, MIN(End_Lng) AS MinEndLongitude, MAX(End_Lng) AS MaxEndLongitude,COUNT(*) as Total_Accidents FROM mytable WHERE `cluster_number`!= -1 GROUP BY `cluster_number` ORDER BY Total_Accidents DESC LIMIT 15;"
+
+#sql_query = "SELECT `cluster_number`,COUNT(*) as Total_Accidents FROM mytable WHERE `cluster_number`!= -1 GROUP BY `cluster_number` ORDER BY Total_Accidents DESC;"
+
+# sql_query = "SELECT `Sunrise_Sunset`,COUNT(*) as Total_Accidents FROM mytable GROUP BY `Sunrise_Sunset`;"
+
+
+# sql_query = "SELECT `state`,COUNT(*) as Total_Accidents FROM mytable WHERE `cluster_number`=2 GROUP BY `State` ORDER BY Total_Accidents DESC;"
+
+
+# sql_query = "SELECT `Weather_Condition`,COUNT(*) as Total_Accidents FROM mytable WHERE `cluster_number`=2 GROUP BY `Weather_Condition` ORDER BY Total_Accidents DESC;"
+
+# for day vs night 11_3
+# sql_query = "SELECT `Sunrise_Sunset`,COUNT(*) as Total_Accidents FROM mytable WHERE `cluster_number`=2 GROUP BY `Sunrise_Sunset` ORDER BY Total_Accidents DESC;"
+
+# for sides 11_4
+# sql_query = "SELECT `Side`,COUNT(*) as Total_Accidents FROM mytable WHERE `cluster_number`=2 GROUP BY `Side` ORDER BY Total_Accidents DESC;"
+
+# for severity 11_5
+#sql_query = "SELECT `Severity`,COUNT(*) as Total_Accidents FROM mytable WHERE `cluster_number`=11 GROUP BY `Severity` ORDER BY Total_Accidents DESC;"
+
+# for temprature 11_6
+sql_query="SELECT CASE WHEN `Temperature(F)` < 0 THEN 'Below 0F' WHEN `Temperature(F)` >= 0 AND `Temperature(F)` <= 50 THEN 'Between 0F and 50F' WHEN `Temperature(F)` > 50 THEN 'Above 50F' END AS Temperature_Category, COUNT(*) AS Total_Accidents FROM mytable WHERE `cluster_number` = 2 GROUP BY CASE WHEN `Temperature(F)` < 0 THEN 'Below 0' WHEN `Temperature(F)` >= 0 AND `Temperature(F)` <= 50 THEN 'Between 0 and 50' WHEN `Temperature(F)` > 50 THEN 'Above 50' END;"
+
+# for visibility 11_7
+# sql_query="SELECT CASE WHEN `Visibility(mi)` < 3 THEN 'Below 3' WHEN `Visibility(mi)` >= 3 AND `Visibility(mi)` <= 7 THEN 'Between 3 and 7' WHEN `Visibility(mi)` > 7 THEN 'Above 7' END AS Visibility_Category, COUNT(*) AS Total_Accidents FROM mytable WHERE `cluster_number` = 2 GROUP BY CASE WHEN `Visibility(mi)` < 3 THEN 'Below 3' WHEN `Visibility(mi)` >= 3 AND `Visibility(mi)` <= 7 THEN 'Between 3 and 7' WHEN `Visibility(mi)` > 7 THEN 'Above 7' END;"
+
+# for traffic_signal 11_8
+# sql_query = "SELECT `Traffic_Signal`,COUNT(*) as Total_Accidents FROM mytable WHERE `cluster_number` =2 GROUP BY `Traffic_Signal` ORDER BY Total_Accidents DESC;"
+
+
+# Execute the SQL query
+result_df = pd.read_sql_query(sql_query, conn)
+
+# Close the database connection
+conn.close()
+
+# Specify the Excel file name to which you want to save the results
+excel_file_name = '2_temp.xlsx'
+
+# Use pandas to write the DataFrame to an Excel file
+result_df.to_excel(excel_file_name, index=False)
+
+print(f"Data saved to {excel_file_name}")
